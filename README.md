@@ -7,7 +7,7 @@
 
 ---
 
-## 🚀 Proje Hakkında
+##  Proje Hakkında
 
 T-Sharp (T#) v4.1, çocukların ve yazılıma yeni başlayan bireylerin, algoritmik düşünme becerilerini kendi ana dillerinde en üst seviyede geliştirebilmeleri için tasarlanmış; yüksek seviyeli, nesne yönelimli mantığa sahip ve tam kapsamlı bir derleyici (compiler) ekosistemidir. 
 
