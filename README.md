@@ -6,7 +6,7 @@
 ![Derleyici](https://img.shields.io/badge/Derleyici-PyInstaller_Tabanlı-yellow.svg)
 
 ---
-
+Uyarı!!: T-Sharp 4.1 öncesi yayınlanmayacaktır.
 ##  Proje Hakkında
 
 T-Sharp (T#) v4.1, çocukların ve yazılıma yeni başlayan bireylerin, algoritmik düşünme becerilerini kendi ana dillerinde en üst seviyede geliştirebilmeleri için tasarlanmış; yüksek seviyeli, nesne yönelimli mantığa sahip ve tam kapsamlı bir derleyici (compiler) ekosistemidir. 
