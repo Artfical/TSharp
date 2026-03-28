@@ -23,7 +23,7 @@ Teknolojinin temelini anlamak, komutların arkasındaki mantığı kavramaktan g
 Geleneksel dillerdeki İngilizce terim karmaşası, başlangıç seviyesindeki bir zihnin "mantık" yerine "söz dizimi" (syntax) hatalarına odaklanmasına neden olur. T-Sharp, bu bariyeri Türkçe komut seti ile yıkar. Bir birey "if" yerine "eğer", "loop" yerine "döngü" yazdığında, kurduğu cümle ile bilgisayara verdiği talimat arasında doğrudan bir bağ kurar. Bu bağ, kalıcı öğrenmenin temelidir.
 
 ### Solo Geliştirme ve Açık Kaynak Ruhu
-Bu proje, tek bir geliştiricinin vizyonuyla inşa edilmiş olsa da, toplumsal bir teknoloji üretim bilinci oluşturmayı hedefler. Açık kaynak kodlu yapısı, her aşamanın şeffaf bir şekilde incelenmesine ve geliştirilmesine olanak tanır. v4.1 sürümü, solo geliştirici deneyimini profesyonel standartlara taşıyan en kararlı yapıdır.
+Bu proje sadece 12 yaşındaki bir bireyin 1.5 senelik emeği ilede yapılmış olsada toplumsal bir teknoloji üretim bilinci oluşturmayı hedefler. Açık kaynak kodlu yapısı, her aşamanın şeffaf bir şekilde incelenmesine ve geliştirilmesine olanak tanır. v4.1 sürümü, solo geliştirici deneyimini profesyonel standartlara taşıyan en kararlı yapıdır.
 
 ---
 
