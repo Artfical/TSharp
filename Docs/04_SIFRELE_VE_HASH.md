@@ -71,7 +71,7 @@ kullan sifrele
 
 b64_sifrele kodlanmis "Merhaba T-Sharp!"
 yazdır kodlanmis
-// TWhocmhhYmEgVC1TaGFycCE=
+// TWhocmhhYmEgVC1TaGFycCE=  (Değişebilir)
 ```
 
 ---
@@ -157,7 +157,7 @@ yazdır "Çözülmüş:" cozulmus
 
 **Çıktı:**
 ```
-Şifreli : Hg8cFRUKEhMdGQYGCxYLBxkFGg==
+Şifreli : Hg8cFRUKEhMdGQYGCxYLBxkFGg==  (Değişebilir)
 Çözülmüş: Raspberry Pi ile T-Sharp!
 ```
 
