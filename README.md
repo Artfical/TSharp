@@ -3,7 +3,7 @@
 ![Lisans](https://img.shields.io/badge/Lisans-GNU_AGPL_v3-red.svg)
 ![Sürüm](https://img.shields.io/badge/Sürüm-v4.1-blue.svg)
 ![Statü](https://img.shields.io/badge/Proje-Solo_Açık_Kaynak-green.svg)
-![Derleyici](https://img.shields.io/badge/Derleyici-PyInstaller_Tabanlı-yellow.svg)
+![Derleyici](https://img.shields.io/badge/Derleyici-TCompile-yellow.svg)
 
 ---
 Uyarı!!: T-Sharp 4.1 öncesi yayınlanmayacaktır.
