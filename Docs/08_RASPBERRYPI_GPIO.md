@@ -317,4 +317,4 @@ Köşeli parantez içindeki sayılar **fiziksel pin** numaralarıdır. T#'da `gp
 | `spi_transfer <giden> <degisken>` | Çift yönlü veri transferi |
  ---
  
-## İşte bu kadar artık sen TSharp biliyorsun
+### İşte bu kadar artık sen TSharp biliyorsun
