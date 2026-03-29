@@ -571,4 +571,4 @@ maske_olustur <ad> <yuzey_adi>              // piksel maskesi oluşturur
 
 ---
 
-> **Sonraki bölüm:** `08_SIFRELE_VE_HASH.md` — Base64, XOR şifreleme, SHA256/512, HMAC ve dosya şifreleme.
+> **Sonraki bölüm:** `08_RaspberryPI_GPIO.md` — Raspberry PI serisi cihazlar üzerinde bulunan GPIO pinlerinin kontolü.
