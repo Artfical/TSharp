@@ -315,3 +315,4 @@ Köşeli parantez içindeki sayılar **fiziksel pin** numaralarıdır. T#'da `gp
 | `spi_baslat <kanal> [hiz]` | SPI bağlantısı açar |
 | `spi_kapat` | SPI bağlantısını kapatır |
 | `spi_transfer <giden> <degisken>` | Çift yönlü veri transferi |
+##İşte bu kadar artık sen TSharp biliyorsun
