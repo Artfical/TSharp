@@ -1,6 +1,0 @@
-numpy
-PySide6
-pygame
-opencv-python
-lgpio
-requests
