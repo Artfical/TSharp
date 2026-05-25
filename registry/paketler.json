@@ -3,17 +3,19 @@
     "surum": "1.0.0",
     "aciklama": "Gelismis matematik fonksiyonlari: istatistik, geometri, sayilar teorisi",
     "yazar": "Talha Berk Arslan",
+    "github": "https://github.com/Artfical/TSharp",
     "tsharp_surum": ">=4.2",
-    "indirme_url": "https://raw.githubusercontent.com/Artfical/TSharp/main/registry/paketler/matematik-1.0.0.zip",
-    "sha256": "45156efa9164539a813d854f21a14e8d3285405b38ff9cc6a2253124e16a54f1",
+    "indirme_url": "https://raw.githubusercontent.com/Artfical/TSharp/main/registry/paketler/matematik-1.0.0.tpm",
+    "sha256": "cb514471642c2b31d3d5f64b059b105ca6187cb6d7d4afccc18fe356a6177fa3",
     "bagimliliklar": {}
   },
   "metin": {
     "surum": "1.0.0",
     "aciklama": "Gelismis metin isleme: bicimlendir, bol, birlestir, regex benzeri aracilar",
     "yazar": "Talha Berk Arslan",
+    "github": "",
     "tsharp_surum": ">=4.2",
-    "indirme_url": "https://raw.githubusercontent.com/Artfical/TSharp/main/registry/paketler/metin-1.0.0.zip",
+    "indirme_url": "https://raw.githubusercontent.com/Artfical/TSharp/main/registry/paketler/metin-1.0.0.tpm",
     "sha256": "",
     "bagimliliklar": {}
   },
@@ -21,8 +23,9 @@
     "surum": "1.0.0",
     "aciklama": "Tarih ve saat islemleri: bugun, simdi, farki_hesapla, bicimlendir",
     "yazar": "Talha Berk Arslan",
+    "github": "",
     "tsharp_surum": ">=4.2",
-    "indirme_url": "https://raw.githubusercontent.com/Artfical/TSharp/main/registry/paketler/tarih-1.0.0.zip",
+    "indirme_url": "https://raw.githubusercontent.com/Artfical/TSharp/main/registry/paketler/tarih-1.0.0.tpm",
     "sha256": "",
     "bagimliliklar": {}
   }

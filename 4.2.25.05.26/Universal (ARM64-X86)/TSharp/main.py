@@ -316,6 +316,7 @@ class TSharp:
         # TPM: Paket yöneticisi
         self.yuklu_paketler = set()
         self.paket_dizini = os.path.join(os.path.expanduser('~'), '.tsharp', 'paketler')
+        self.paket_fonksiyonlari = {}  # {fonk_adi: callable(args) -> deger}
 
     # ==================== TPM: PAKET YONETICISI ====================
 
@@ -323,19 +324,23 @@ class TSharp:
         if paket_adi in self.yuklu_paketler:
             return
         paket_klasoru = os.path.join(self.paket_dizini, paket_adi)
-        paket_dosyasi = os.path.join(paket_klasoru, f'{paket_adi}.tsharp')
-        if not os.path.exists(paket_dosyasi):
+        paket_py = os.path.join(paket_klasoru, f'{paket_adi}.py')
+        if not os.path.exists(paket_py):
             print(f"TPM Hata: '{paket_adi}' paketi kurulu degil.")
             print(f"  Kurmak icin: python tpm.py yukle {paket_adi}")
             return
         try:
-            with open(paket_dosyasi, 'r', encoding='utf-8') as f:
-                satirlar = f.readlines()
-            self.satirlari_calistir(satirlar)
+            import importlib.util
+            spec = importlib.util.spec_from_file_location(paket_adi, paket_py)
+            modul = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(modul)
+            if hasattr(modul, 'TSHARP_FONKSIYONLAR'):
+                for isim, fn in modul.TSHARP_FONKSIYONLAR.items():
+                    self.paket_fonksiyonlari[isim] = fn
             self.yuklu_paketler.add(paket_adi)
             print(f"[TPM] '{paket_adi}' paketi yuklendi.")
         except Exception as e:
-            print(f"TPM Hata: '{paket_adi}' paketi yuklenirken hata: {e}")
+            print(f"TPM Hata: '{paket_adi}' yuklenirken hata: {e}")
 
     # ==================== INTERAKTIF MOD ====================
 
@@ -4316,6 +4321,13 @@ class TSharp:
             fonk = self.degiskenler[fonk_adi]
             if callable(fonk):
                 return fonk(*args)
+
+        # TPM: Kurulu paket fonksiyonları
+        if fonk_adi in self.paket_fonksiyonlari:
+            try:
+                return self.paket_fonksiyonlari[fonk_adi](args)
+            except Exception as e:
+                raise ValueError(f"Paket fonksiyon hatasi '{fonk_adi}': {e}")
 
         raise ValueError(f"Bilinmeyen fonksiyon: {fonk_adi}")
 

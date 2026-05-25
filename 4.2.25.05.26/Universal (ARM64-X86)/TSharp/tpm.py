@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
 TPM - T-Sharp Paket Yoneticisi v1.0
+Paket formati: .tpm (ZIP arsivi, icinde paket.json + *.py dosyalari)
+
 Kullanim:
   python tpm.py yukle   <paket>   - Paketi indir ve kur
   python tpm.py kaldir  <paket>   - Paketi kaldir
@@ -9,7 +11,7 @@ Kullanim:
   python tpm.py bilgi   <paket>   - Paket bilgisi goster
   python tpm.py guncelle [paket]  - Paket(ler)i guncelle
   python tpm.py baslat  <isim>    - Yeni paket projesi olustur
-  python tpm.py yayinla           - Mevcut paketi yayinla (GitHub PR)
+  python tpm.py yayinla           - Mevcut paketi .tpm olarak pakelle
 """
 
 import sys
@@ -37,12 +39,12 @@ KAYIT_DEFTERI_URL = (
 KAYIT_DEFTERI_YEREL = TSHARP_DIZINI / "paketler.json"
 
 RENK = {
-    "yesil":  "\033[92m",
+    "yesil":   "\033[92m",
     "kirmizi": "\033[91m",
-    "sari":   "\033[93m",
-    "mavi":   "\033[94m",
-    "beyaz":  "\033[0m",
-    "kalin":  "\033[1m",
+    "sari":    "\033[93m",
+    "mavi":    "\033[94m",
+    "beyaz":   "\033[0m",
+    "kalin":   "\033[1m",
 }
 
 
@@ -53,8 +55,8 @@ def renkli(metin, renk):
 
 
 def baslik():
-    print(renkli(f"\n  TPM - T-Sharp Paket Yoneticisi v{SURUM} (TSharp {TSHARP_SURUM})", "kalin"))
-    print(renkli("  " + "─" * 48, "mavi"))
+    print(renkli(f"\n  TPM - T-Sharp Paket Yoneticisi v{SURUM}", "kalin"))
+    print(renkli("  " + "─" * 46, "mavi"))
 
 
 def dizinleri_olustur():
@@ -117,6 +119,44 @@ def kurulu_paketler():
     ]
 
 
+# ==================== .TPM DOSYASINI AC ====================
+
+def tpm_dosyasini_kur(tpm_yolu, paket_adi):
+    """
+    .tpm dosyasini (ZIP arsivi) acar ve ~/.tsharp/paketler/<paket_adi>/ altina kurar.
+    Beklenen icerik:
+      paket.json          - metadata
+      <paket_adi>.py      - ana Python modulu (TSHARP_FONKSIYONLAR icermelidir)
+      diger .py dosyalari - varsa yardimci moduller
+    """
+    hedef = PAKET_DIZINI / paket_adi
+    if hedef.exists():
+        shutil.rmtree(hedef)
+    hedef.mkdir(parents=True)
+
+    with zipfile.ZipFile(tpm_yolu, "r") as zf:
+        icerik = zf.namelist()
+        # Guvenlik: path traversal engeli
+        for dosya in icerik:
+            if dosya.startswith("/") or ".." in dosya:
+                raise ValueError(f"Guvenli olmayan dosya yolu: {dosya}")
+        zf.extractall(hedef)
+
+    # paket.json var mi kontrol et
+    if not (hedef / "paket.json").exists():
+        shutil.rmtree(hedef)
+        raise ValueError(".tpm icinde paket.json bulunamadi.")
+
+    # Ana Python modulu var mi kontrol et
+    ana_py = hedef / f"{paket_adi}.py"
+    if not ana_py.exists():
+        # Belki farkli isimli tek bir .py var?
+        py_dosyalari = list(hedef.glob("*.py"))
+        if not py_dosyalari:
+            shutil.rmtree(hedef)
+            raise ValueError(f".tpm icinde {paket_adi}.py bulunamadi.")
+
+
 # ==================== KOMUTLAR ====================
 
 def komut_yukle(paket_adi):
@@ -126,7 +166,7 @@ def komut_yukle(paket_adi):
     kayit = kayit_defteri_oku()
 
     if paket_adi not in kayit:
-        print(renkli(f"  Hata: '{paket_adi}' paketi kayit defterinde bulunamadi.", "kirmizi"))
+        print(renkli(f"  Hata: '{paket_adi}' kayit defterinde bulunamadi.", "kirmizi"))
         print(renkli(f"  Arama icin: python tpm.py ara {paket_adi}", "sari"))
         sys.exit(1)
 
@@ -138,21 +178,22 @@ def komut_yukle(paket_adi):
         print(renkli(f"  '{paket_adi}' v{surum} zaten kurulu.", "yesil"))
         return
 
-    print(renkli(f"  Indiriliyor: {paket_adi} v{surum}...", "mavi"))
-
     indirme_url = bilgi.get("indirme_url", "")
     if not indirme_url:
-        print(renkli("  Hata: Indirme adresi bulunamadi.", "kirmizi"))
+        print(renkli("  Hata: Kayit defterinde indirme adresi yok.", "kirmizi"))
         sys.exit(1)
 
-    zip_yolu = ONBELLEK_DIZINI / f"{paket_adi}-{surum}.zip"
+    dosya_adi = indirme_url.split("/")[-1]
+    print(renkli(f"  Indiriliyor: {dosya_adi}  [{paket_adi} v{surum}]", "mavi"))
+
+    tpm_yolu = ONBELLEK_DIZINI / dosya_adi
     try:
         req = urllib.request.Request(
             indirme_url,
             headers={"User-Agent": f"TPM/{SURUM} TSharp/{TSHARP_SURUM}"},
         )
         with urllib.request.urlopen(req, timeout=30) as r:
-            zip_yolu.write_bytes(r.read())
+            tpm_yolu.write_bytes(r.read())
     except urllib.error.URLError as e:
         print(renkli(f"  Hata: Indirme basarisiz: {e}", "kirmizi"))
         sys.exit(1)
@@ -160,32 +201,32 @@ def komut_yukle(paket_adi):
     # SHA256 dogrulama
     beklenen_sha = bilgi.get("sha256", "")
     if beklenen_sha:
-        gercek_sha = hashlib.sha256(zip_yolu.read_bytes()).hexdigest()
+        gercek_sha = hashlib.sha256(tpm_yolu.read_bytes()).hexdigest()
         if gercek_sha != beklenen_sha:
-            zip_yolu.unlink(missing_ok=True)
-            print(renkli("  Hata: SHA256 dogrulama basarisiz. Dosya bozuk olabilir.", "kirmizi"))
+            tpm_yolu.unlink(missing_ok=True)
+            print(renkli("  Hata: SHA256 eslesmedi. Dosya bozuk olabilir.", "kirmizi"))
             sys.exit(1)
 
-    # Kurulum
-    hedef = PAKET_DIZINI / paket_adi
-    if hedef.exists():
-        shutil.rmtree(hedef)
-    hedef.mkdir(parents=True)
-
-    with zipfile.ZipFile(zip_yolu, "r") as zf:
-        zf.extractall(hedef)
+    try:
+        tpm_dosyasini_kur(tpm_yolu, paket_adi)
+    except (ValueError, zipfile.BadZipFile) as e:
+        print(renkli(f"  Hata: Paket acilirken sorun: {e}", "kirmizi"))
+        sys.exit(1)
 
     print(renkli(f"  '{paket_adi}' v{surum} basariyla kuruldu!", "yesil"))
     aciklama = bilgi.get("aciklama", "")
     if aciklama:
-        print(renkli(f"  {aciklama}", "beyaz"))
+        print(f"  {aciklama}")
+    github = bilgi.get("github", "")
+    if github:
+        print(renkli(f"  GitHub: {github}", "mavi"))
 
 
 def komut_kaldir(paket_adi):
     baslik()
     hedef = PAKET_DIZINI / paket_adi
     if not hedef.exists():
-        print(renkli(f"  '{paket_adi}' kurulu degil.", "sari"))
+        print(renkli(f"  '{paket_adi}' zaten kurulu degil.", "sari"))
         return
     shutil.rmtree(hedef)
     print(renkli(f"  '{paket_adi}' kaldirildi.", "yesil"))
@@ -197,15 +238,16 @@ def komut_listele():
     paketler = kurulu_paketler()
     if not paketler:
         print(renkli("  Hic kurulu paket yok.", "sari"))
-        print(renkli("  Aramak icin: python tpm.py ara <sorgu>", "mavi"))
+        print(renkli("  Kesfetmek icin: python tpm.py ara <sorgu>", "mavi"))
         return
-    print(renkli(f"  Kurulu paketler ({len(paketler)}):", "kalin"))
+    print(renkli(f"  Kurulu paketler ({len(paketler)}):\n", "kalin"))
     for p in sorted(paketler):
         bilgi = kurulu_paket_bilgisi(p)
         if bilgi:
             surum = bilgi.get("surum", "?")
             aciklama = bilgi.get("aciklama", "")
-            print(f"    {renkli(p, 'yesil')} v{surum}  {renkli(aciklama, 'beyaz')}")
+            yazar = bilgi.get("yazar", "")
+            print(f"    {renkli(p, 'yesil')} v{surum}  —  {aciklama}  ({yazar})")
         else:
             print(f"    {renkli(p, 'yesil')}")
 
@@ -223,17 +265,21 @@ def komut_ara(sorgu):
         for isim, bilgi in kayit.items()
         if sorgu_kucuk in isim.lower()
         or sorgu_kucuk in bilgi.get("aciklama", "").lower()
+        or sorgu_kucuk in bilgi.get("yazar", "").lower()
     ]
     if not sonuclar:
         print(renkli(f"  '{sorgu}' icin sonuc bulunamadi.", "sari"))
         return
-    print(renkli(f"  '{sorgu}' icin {len(sonuclar)} sonuc:", "kalin"))
+    print(renkli(f"  '{sorgu}' icin {len(sonuclar)} sonuc:\n", "kalin"))
     for isim, bilgi in sorted(sonuclar):
         surum = bilgi.get("surum", "?")
         aciklama = bilgi.get("aciklama", "")
         yazar = bilgi.get("yazar", "")
-        kurulu = "  [kurulu]" if (PAKET_DIZINI / isim).exists() else ""
-        print(f"    {renkli(isim, 'yesil')} v{surum}{renkli(kurulu, 'mavi')}  {aciklama}  ({yazar})")
+        github = bilgi.get("github", "")
+        kurulu = renkli("  [kurulu]", "yesil") if (PAKET_DIZINI / isim).exists() else ""
+        print(f"    {renkli(isim, 'yesil')} v{surum}{kurulu}")
+        print(f"      {aciklama}")
+        print(f"      Yazar: {yazar}  |  {github}")
 
 
 def komut_bilgi(paket_adi):
@@ -248,15 +294,19 @@ def komut_bilgi(paket_adi):
         return
 
     kaynak = yerel or uzak
-    print(renkli(f"  Paket: {paket_adi}", "kalin"))
+    print(renkli(f"  {paket_adi}", "kalin"))
     print(f"  Surum:       {kaynak.get('surum', '?')}")
     print(f"  Aciklama:    {kaynak.get('aciklama', '')}")
     print(f"  Yazar:       {kaynak.get('yazar', '')}")
-    print(f"  Bagimlilik:  {', '.join(kaynak.get('bagimliliklar', {}).keys()) or 'yok'}")
+    print(f"  GitHub:      {kaynak.get('github', 'yok')}")
+    print(f"  TSharp:      {kaynak.get('tsharp_surum', '?')}")
+    bagimliliklar = kaynak.get("bagimliliklar", {})
+    print(f"  Bagimlilik:  {', '.join(bagimliliklar.keys()) or 'yok'}")
     durum = renkli("kurulu", "yesil") if yerel else renkli("kurulu degil", "sari")
     print(f"  Durum:       {durum}")
     if uzak and yerel and uzak.get("surum") != yerel.get("surum"):
-        print(renkli(f"  Guncelleme var: v{uzak.get('surum')}", "sari"))
+        print(renkli(f"\n  ! Guncelleme mevcut: v{uzak.get('surum')}", "sari"))
+        print(renkli(f"    python tpm.py guncelle {paket_adi}", "mavi"))
 
 
 def komut_guncelle(paket_adi=None):
@@ -269,7 +319,7 @@ def komut_guncelle(paket_adi=None):
         yerel = kurulu_paket_bilgisi(p)
         uzak = kayit.get(p, {})
         if yerel and uzak and yerel.get("surum") != uzak.get("surum"):
-            print(renkli(f"  Guncelleniyor: {p} {yerel.get('surum')} -> {uzak.get('surum')}", "mavi"))
+            print(renkli(f"  {p}: v{yerel.get('surum')} -> v{uzak.get('surum')}", "mavi"))
             komut_yukle(p)
             guncellenen += 1
     if guncellenen == 0:
@@ -287,8 +337,9 @@ def komut_baslat(paket_adi):
     manifest = {
         "isim": paket_adi,
         "surum": "1.0.0",
-        "aciklama": f"{paket_adi} icin T-Sharp paketi",
+        "aciklama": f"{paket_adi} paketi",
         "yazar": "",
+        "github": "",
         "tsharp_surum": f">={TSHARP_SURUM}",
         "bagimliliklar": {},
     }
@@ -296,20 +347,28 @@ def komut_baslat(paket_adi):
         json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
-    kod = f"""// {paket_adi} - T-Sharp Paketi
-// Buraya fonksiyonlarinizi yazin
+    # Ana Python modulu - sablonu
+    py_kodu = f'''# {paket_adi} - TSharp {TSHARP_SURUM} uyumlu paket
+# Bu dosya TSharp interpreter tarafindan yuklenecek
+# TSHARP_FONKSIYONLAR: {{fonk_adi: callable(args) -> deger}}
 
-fonksiyon merhaba isim
-  yazdir "Merhaba " + isim + "! Bu {paket_adi} paketidir."
-son
-"""
-    (hedef / f"{paket_adi}.tsharp").write_text(kod, encoding="utf-8")
+# args = T# tarafindan gecilen arguman listesi
+# Ornek: faktoriyel(5) cagrilirsa args = [5]
+
+TSHARP_FONKSIYONLAR = {{
+    "merhaba": lambda args: f"Merhaba {{args[0]}}!" if args else "Merhaba!",
+    # Buraya kendi fonksiyonlarinizi ekleyin
+}}
+'''
+    (hedef / f"{paket_adi}.py").write_text(py_kodu, encoding="utf-8")
 
     print(renkli(f"  '{paket_adi}' paketi olusturuldu!", "yesil"))
     print(f"  Klasor:   {hedef.resolve()}")
     print(f"  Manifest: {hedef / 'paket.json'}")
-    print(f"  Kod:      {hedef / (paket_adi + '.tsharp')}")
-    print(renkli("\n  Yayinlamak icin kayit defterini GitHub PR ile guncelleyin.", "mavi"))
+    print(f"  Kod:      {hedef / (paket_adi + '.py')}")
+    print()
+    print(renkli("  T# kullanimi: kullan " + paket_adi, "mavi"))
+    print(renkli("  Yayinlamak icin: python tpm.py yayinla", "sari"))
 
 
 def komut_yayinla():
@@ -319,60 +378,74 @@ def komut_yayinla():
         print(renkli("  Hata: Bu dizinde paket.json bulunamadi.", "kirmizi"))
         print(renkli("  Once: python tpm.py baslat <paket_adi>", "sari"))
         sys.exit(1)
+
     manifest = json.loads(manifest_yolu.read_text(encoding="utf-8"))
     isim = manifest.get("isim", "?")
     surum = manifest.get("surum", "?")
 
-    zip_adi = f"{isim}-{surum}.zip"
-    with zipfile.ZipFile(zip_adi, "w", zipfile.ZIP_DEFLATED) as zf:
-        for dosya in Path(".").iterdir():
-            if dosya.suffix in (".tsharp", ".json", ".md", ".txt"):
-                zf.write(dosya, dosya.name)
+    # Python dosyalari var mi?
+    py_dosyalari = list(Path(".").glob("*.py"))
+    if not py_dosyalari:
+        print(renkli("  Hata: Hic .py dosyasi bulunamadi.", "kirmizi"))
+        sys.exit(1)
 
-    sha256 = hashlib.sha256(Path(zip_adi).read_bytes()).hexdigest()
+    tpm_adi = f"{isim}-{surum}.tpm"
+    with zipfile.ZipFile(tpm_adi, "w", zipfile.ZIP_DEFLATED) as zf:
+        zf.write(manifest_yolu, "paket.json")
+        for dosya in py_dosyalari:
+            zf.write(dosya, dosya.name)
+        # Varsa README ve LICENSE ekle
+        for ekstra in ["README.md", "LICENSE", "LISANS"]:
+            if Path(ekstra).exists():
+                zf.write(ekstra)
 
-    print(renkli(f"  '{isim}' v{surum} paketlendi: {zip_adi}", "yesil"))
+    sha256 = hashlib.sha256(Path(tpm_adi).read_bytes()).hexdigest()
+
+    print(renkli(f"  '{isim}' v{surum} paketlendi: {tpm_adi}", "yesil"))
     print(f"  SHA256: {sha256}")
-    print(renkli("\n  Yayinlamak icin adimlar:", "kalin"))
-    print(f"  1. {zip_adi} dosyasini GitHub'a yukleyin:")
-    print(f"     registry/paketler/{zip_adi}")
-    print(f"  2. registry/paketler.json dosyasina ekleyin:")
+    print()
+    print(renkli("  Yayinlamak icin adimlar:", "kalin"))
+    print(f"  1. {tpm_adi} dosyasini su yola yukleyin:")
+    print(f"     registry/paketler/{tpm_adi}")
+    print(f"  2. registry/paketler.json'a su girisi ekleyin:")
     giris = {
         isim: {
             "surum": surum,
             "aciklama": manifest.get("aciklama", ""),
             "yazar": manifest.get("yazar", ""),
-            "indirme_url": f"https://raw.githubusercontent.com/Artfical/TSharp/main/registry/paketler/{zip_adi}",
+            "github": manifest.get("github", ""),
+            "tsharp_surum": manifest.get("tsharp_surum", f">={TSHARP_SURUM}"),
+            "indirme_url": f"https://raw.githubusercontent.com/Artfical/TSharp/main/registry/paketler/{tpm_adi}",
             "sha256": sha256,
             "bagimliliklar": manifest.get("bagimliliklar", {}),
         }
     }
     print(json.dumps(giris, ensure_ascii=False, indent=2))
-    print(renkli("  3. GitHub'a Pull Request gonderin.", "mavi"))
+    print(renkli("  3. GitHub'a Pull Request gonder.", "mavi"))
 
 
 # ==================== YARDIM ====================
 
 def yardim():
     baslik()
-    print("""
-  Kullanim: python tpm.py <komut> [arguman]
+    print(f"""
+  Paket formati: .tpm  (ZIP arsivi: paket.json + *.py)
+  Python modulu: TSHARP_FONKSIYONLAR = {{"fonk": callable(args)}}
 
   Komutlar:
-    yukle   <paket>    Paketi indir ve kur
+    yukle   <paket>    .tpm indir, ac, kur
     kaldir  <paket>    Kurulu paketi kaldir
     listele            Kurulu paketleri goster
     ara     <sorgu>    Kayit defterinde ara
     bilgi   <paket>    Paket detaylarini goster
     guncelle [paket]   Paket(ler)i guncelle
     baslat  <isim>     Yeni paket projesi olustur
-    yayinla            Mevcut paketi ZIP'e paketler ve
-                       kayit defteri girisini hazirlar
+    yayinla            .tpm olustur + kayit girisi hazirla
 
   Ornekler:
     python tpm.py yukle matematik
-    python tpm.py ara oyun
-    python tpm.py listele
+    python tpm.py ara   fizik
+    python tpm.py bilgi matematik
     python tpm.py baslat benim-paketim
 """)
 
@@ -386,27 +459,26 @@ def main():
 
     komut = sys.argv[1].lower()
 
-    # Turkce karakter normallestiricisi
     donusum = {
-        "yükle": "yukle", "yukle": "yukle",
+        "yükle": "yukle",   "yukle": "yukle",
         "kaldır": "kaldir", "kaldir": "kaldir",
         "güncelle": "guncelle", "guncelle": "guncelle",
         "başlat": "baslat", "baslat": "baslat",
         "yayınla": "yayinla", "yayinla": "yayinla",
         "listele": "listele", "ara": "ara",
-        "bilgi": "bilgi", "yardim": "yardim",
-        "yardım": "yardim", "help": "yardim",
+        "bilgi": "bilgi",
+        "yardim": "yardim", "yardım": "yardim", "help": "yardim",
     }
     komut = donusum.get(komut, komut)
 
     if komut == "yukle":
         if len(sys.argv) < 3:
-            print(renkli("  Kullanim: python tpm.py yukle <paket_adi>", "kirmizi"))
+            print(renkli("  Kullanim: python tpm.py yukle <paket>", "kirmizi"))
             sys.exit(1)
         komut_yukle(sys.argv[2])
     elif komut == "kaldir":
         if len(sys.argv) < 3:
-            print(renkli("  Kullanim: python tpm.py kaldir <paket_adi>", "kirmizi"))
+            print(renkli("  Kullanim: python tpm.py kaldir <paket>", "kirmizi"))
             sys.exit(1)
         komut_kaldir(sys.argv[2])
     elif komut == "listele":
@@ -418,7 +490,7 @@ def main():
         komut_ara(sys.argv[2])
     elif komut == "bilgi":
         if len(sys.argv) < 3:
-            print(renkli("  Kullanim: python tpm.py bilgi <paket_adi>", "kirmizi"))
+            print(renkli("  Kullanim: python tpm.py bilgi <paket>", "kirmizi"))
             sys.exit(1)
         komut_bilgi(sys.argv[2])
     elif komut == "guncelle":
@@ -426,7 +498,7 @@ def main():
         komut_guncelle(paket)
     elif komut == "baslat":
         if len(sys.argv) < 3:
-            print(renkli("  Kullanim: python tpm.py baslat <paket_adi>", "kirmizi"))
+            print(renkli("  Kullanim: python tpm.py baslat <paket>", "kirmizi"))
             sys.exit(1)
         komut_baslat(sys.argv[2])
     elif komut == "yayinla":
