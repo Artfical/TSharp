@@ -1,0 +1,29 @@
+{
+  "matematik": {
+    "surum": "1.0.0",
+    "aciklama": "Gelismis matematik fonksiyonlari: istatistik, geometri, sayilar teorisi",
+    "yazar": "Talha Berk Arslan",
+    "tsharp_surum": ">=4.2",
+    "indirme_url": "https://raw.githubusercontent.com/Artfical/TSharp/main/registry/paketler/matematik-1.0.0.zip",
+    "sha256": "45156efa9164539a813d854f21a14e8d3285405b38ff9cc6a2253124e16a54f1",
+    "bagimliliklar": {}
+  },
+  "metin": {
+    "surum": "1.0.0",
+    "aciklama": "Gelismis metin isleme: bicimlendir, bol, birlestir, regex benzeri aracilar",
+    "yazar": "Talha Berk Arslan",
+    "tsharp_surum": ">=4.2",
+    "indirme_url": "https://raw.githubusercontent.com/Artfical/TSharp/main/registry/paketler/metin-1.0.0.zip",
+    "sha256": "",
+    "bagimliliklar": {}
+  },
+  "tarih": {
+    "surum": "1.0.0",
+    "aciklama": "Tarih ve saat islemleri: bugun, simdi, farki_hesapla, bicimlendir",
+    "yazar": "Talha Berk Arslan",
+    "tsharp_surum": ">=4.2",
+    "indirme_url": "https://raw.githubusercontent.com/Artfical/TSharp/main/registry/paketler/tarih-1.0.0.zip",
+    "sha256": "",
+    "bagimliliklar": {}
+  }
+}

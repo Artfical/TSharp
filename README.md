@@ -1,12 +1,10 @@
 # T-Sharp (T#) Programlama Dili ve TCompile Ekosistemi
 
 ![Lisans](https://img.shields.io/badge/Lisans-GNU_AGPL_v3-red.svg)
-![Sürüm](https://img.shields.io/badge/Sürüm-v4.1-blue.svg)
+![Sürüm](https://img.shields.io/badge/Sürüm-v4.2-blue.svg)
 ![Statü](https://img.shields.io/badge/Proje-Solo_Açık_Kaynak-green.svg)
 ![Derleyici](https://img.shields.io/badge/Derleyici-TCompile-yellow.svg)
-
----
-Uyarı!!: T-Sharp 4.1 öncesi yayınlanmayacaktır.
+![Paket Yöneticisi](https://img.shields.io/badge/TPM-v1.0-orange.svg)
 ##  Proje Hakkında
 
 T-Sharp (T#) v4.1, çocukların ve yazılıma yeni başlayan bireylerin, algoritmik düşünme becerilerini kendi ana dillerinde en üst seviyede geliştirebilmeleri için tasarlanmış; yüksek seviyeli, nesne yönelimli mantığa sahip ve tam kapsamlı bir derleyici (compiler) ekosistemidir. 
@@ -117,9 +115,46 @@ T-Sharp v4.1, tamamen bireysel bir çabanın ürünüdür. Projenin tüm mimaris
 
 ---
 
-## 9. Lisans
+## 9. TPM: T-Sharp Paket Yöneticisi (v4.2 ile geldi!)
 
-Bu proje **GNU Affero General Public License v3.0 (AGPL-3.0)** altında lisanslanmıştır. 
+v4.2 sürümü ile birlikte **TPM (T-Sharp Paket Yöneticisi)** ekosisteme dahil oldu. TPM, T# topluluğunun yazdığı kütüphaneleri tek komutla kurmanıza olanak tanır.
+
+### TPM Komutları
+
+```bash
+python tpm.py yukle   matematik      # Paketi kur
+python tpm.py kaldir  matematik      # Paketi kaldır
+python tpm.py listele                # Kurulu paketler
+python tpm.py ara     hesap          # Kayıt defterinde ara
+python tpm.py bilgi   matematik      # Paket detayı
+python tpm.py guncelle               # Tüm paketleri güncelle
+python tpm.py baslat  benim-paketim  # Yeni paket oluştur
+python tpm.py yayinla                # Paketi yayımla
+```
+
+### T# Kodunda Kullanım
+
+```
+kullan matematik
+
+yazdir kare(5)         // 25
+yazdir faktoriyel(6)   // 720
+yazdir asal_mi(17)     // 1 (dogru)
+yazdir daire_alani(3)  // 28.27...
+```
+
+### Kendi Paketini Yayımla
+
+1. `python tpm.py baslat benim-paketim` → klasör oluşturur
+2. `.tsharp` dosyasına fonksiyonlarını yaz
+3. `python tpm.py yayinla` → ZIP oluşturur + registry girişini hazırlar
+4. GitHub'a PR gönder → topluluk kullanıma açılır!
+
+---
+
+## 10. Lisans
+
+Bu proje **GNU Affero General Public License v3.0 (AGPL-3.0)** altında lisanslanmıştır.  
 
 Bu lisans uyarınca, yazılımın değiştirilmiş sürümlerini bir ağ üzerinden sunanlar, bu sürümlerin kaynak kodunu kullanıcıların erişimine açmakla yükümlüdür. Bu, projenin ve topluluğun gelişiminin her zaman özgür kalmasını garanti altına alır.
 

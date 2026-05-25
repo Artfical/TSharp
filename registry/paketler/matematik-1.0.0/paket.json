@@ -1,0 +1,8 @@
+{
+  "isim": "matematik",
+  "surum": "1.0.0",
+  "aciklama": "Gelismis matematik fonksiyonlari: istatistik, geometri, sayilar teorisi",
+  "yazar": "Talha Berk Arslan",
+  "tsharp_surum": ">=4.2",
+  "bagimliliklar": {}
+}
